@@ -9,19 +9,6 @@ public class ClickScript : MonoBehaviour {
 
     public void OnClick()
     {
-        Image m = GetComponent<Image>();
-        if (TicTacToeScript.instance.isPlayer1)
-        {
-            m.sprite = TicTacToeScript.instance.x;
-            TicTacToeScript.instance.OnClick();
-            isX = true;
-        }
-        else
-        {
-            m.sprite = TicTacToeScript.instance.o;
-            TicTacToeScript.instance.OnClick();
-            isX = false;
-        }
-
+       
     }
 }
