@@ -6,10 +6,10 @@ using UnityEngine;
 public class PlayerTurnScript : MonoBehaviour {
 
 	[SerializeField]
-	private Image player1Info,player2Info,cpuInfo;
+	private Image player1Info,player2Info;
 
 
-	public void GiveTurn(GameModeScript.TURN CURRENTPLAYERTURN)
+	public void GiveTurn(TURN CURRENTPLAYERTURN)
 	{
 		Image currentInfoImage=null;
 
@@ -20,23 +20,18 @@ public class PlayerTurnScript : MonoBehaviour {
 
 		switch(CURRENTPLAYERTURN)
 		{
-			case GameModeScript.TURN.PLAYER1:
+			case TURN.PLAYER1:
 			currentInfoImage=player1Info;
 			break;
 
-			case GameModeScript.TURN.PLAYER2:
+			case TURN.PLAYER2:
 			currentInfoImage=player2Info;
 			break;
 
-			case GameModeScript.TURN.AI:
-			currentInfoImage=cpuInfo;
-			break;
-
-			case GameModeScript.TURN.NONE:
+			case TURN.NONE:
 			currentInfoImage=null;
 			player1Info.color=new Color(player1Info.color.r,player1Info.color.g,player1Info.color.b,50f);
 			player2Info.color=new Color(player2Info.color.r,player2Info.color.g,player2Info.color.b,50f);
-			cpuInfo.color=new Color(cpuInfo.color.r,cpuInfo.color.g,cpuInfo.color.b,50f);
 			break;
 
 			default:

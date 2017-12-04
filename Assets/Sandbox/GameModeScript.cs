@@ -3,19 +3,38 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine;
 
-public class GameModeScript : MonoBehaviour {
-
-	[SerializeField]
-	private GameObject gameInfoPanel;
-	public enum TURN
+public struct PlayerTurnData
 	{
-		PLAYER1,PLAYER2,AI,NONE
+		public TURN  CURRENTPLAYERTURN;
+		public Sprite spriteChoosed;
+		public SPRITEID XORO;
 	}
 
-	private TURN  PLAYERTURN;
 
+
+public class GameModeScript : MonoBehaviour {
+
+
+	public static GameModeScript gameModeScriptInstance;
+	
+	[SerializeField]
+	private GameObject gameInfoPanel;
+
+	void Start()
+	{
+		gameModeScriptInstance=this;
+	}
 	public void GiveChance(TURN whichPlayersTurn)
 	{
 		gameInfoPanel.GetComponent<PlayerTurnScript>().GiveTurn(whichPlayersTurn);
 	}
+	void SetPlayerPresets()
+	{
+
+	}
+	public void OnUserInput(GameObject respectiveButtonGameObject,int buttonRowIndex,int buttonColumnIndex)
+	{
+
+	}
+
 }
