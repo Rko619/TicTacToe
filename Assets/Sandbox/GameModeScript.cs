@@ -3,38 +3,25 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine;
 
-public struct PlayerTurnData
-	{
-		public TURN  CURRENTPLAYERTURN;
-		public Sprite spriteChoosed;
-		public SPRITEID XORO;
-	}
+public class GameModeScript : MonoBehaviour
+{
 
-
-
-public class GameModeScript : MonoBehaviour {
-
-
-	public static GameModeScript gameModeScriptInstance;
-	
 	[SerializeField]
-	private GameObject gameInfoPanel;
+	private TicTacToeControllerScript tictactoeScript;
+	private PlayersData player1Data,player2Data,currentPlayerData;
+
+
 
 	void Start()
 	{
-		gameModeScriptInstance=this;
+		GameManager.instance.gameMode=this;
 	}
-	public void GiveChance(TURN whichPlayersTurn)
+	public void OnUserClicked(InputData i)
 	{
-		gameInfoPanel.GetComponent<PlayerTurnScript>().GiveTurn(whichPlayersTurn);
+		tictactoeScript.UpdateMatrixData(i,currentPlayerData);
 	}
-	void SetPlayerPresets()
-	{
 
-	}
-	public void OnUserInput(GameObject respectiveButtonGameObject,int buttonRowIndex,int buttonColumnIndex)
-	{
 
-	}
+
 
 }

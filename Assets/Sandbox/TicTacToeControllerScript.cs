@@ -6,17 +6,19 @@ using UnityEngine;
 public class XOType
 {
 	public Sprite currentSprite;
-	public SPRITEID CURRENTPLAYERSPRITEID;
+	public ID CurrentPlayerID;
 	public bool isOccupied;
 
     public int rowId,coulmnId;
     public Image buttonImage;
     public Button associatedButton;
     public GameObject relatedGameobject;
-    public  XOType(Sprite _currentSprite,SPRITEID _currentPlayerID,bool _isOccupied,int _rowId,int _columnId,Button _buttonAssociated,Image _buttonImage,GameObject _relatedGameobject)
+
+    //Class for matrix 
+    public  XOType(Sprite _currentSprite,ID _currentPlayerID,bool _isOccupied,int _rowId,int _columnId,Button _buttonAssociated,Image _buttonImage,GameObject _relatedGameobject)
     {
         currentSprite=_currentSprite;
-        CURRENTPLAYERSPRITEID=_currentPlayerID;
+        CurrentPlayerID=_currentPlayerID;
         isOccupied=_isOccupied;
         rowId=_rowId;
         coulmnId=_columnId;
@@ -38,79 +40,78 @@ public class TicTacToeControllerScript : MonoBehaviour
 
     [SerializeField]
     private GameObject blocksSpawnGridRoot;
-    public bool isPlayer1=true;
+
     private static int gridSize=3;
 	private XOType[,] matrixGrid=new XOType[gridSize,gridSize];
 
 
 
 
-    void OnEnable()
+    void SetGridSize()
     {
-        instance = this;
-        InitializeBlocks();
+        blocksSpawnGridRoot.GetComponent<GridLayoutGroup>().constraintCount=gridSize;
     }
-
-
-    public void OnClick()
-    {
-        if (isPlayer1)
-        {
-            isPlayer1 = false;
-
-        }
-        else
-        {
-            isPlayer1 = true;
-        }
-    }
-
     void InitializeBlocks()
     {
         for(int i=0;i<gridSize;i++)
         {
             for(int j=0;j<gridSize;j++)
             {
-                GameObject n=new GameObject();
-                n.transform.SetParent(blocksSpawnGridRoot.transform);
-                n.name=i.ToString()+","+j.ToString();
-                n.AddComponent<Image>().sprite=normalSprite;
-                int _rowIndex=i,_columnIndex=j;
-                //Assigning every  button which a function
-                n.AddComponent<Button>().onClick.AddListener(delegate{OnButtonClicked(n,_rowIndex,_columnIndex);});
-                n.GetComponent<Button>().transition=Button.Transition.None;
-                matrixGrid[i,j]=new XOType(null,SPRITEID.NONE,false,i,j,n.GetComponent<Button>(),n.GetComponent<Image>(),n);
+                GameObject g=new GameObject();
+                g.transform.SetParent(blocksSpawnGridRoot.transform);
+                g.name=i.ToString()+","+j.ToString();
+                g.AddComponent<Image>().sprite=normalSprite;
+                int _buttonRowIndex=i,_buttonColumnIndex=j;
+
+                //Assigning every  button with same function
+                //create a input data struct and pass all values through it
+                InputData _inputData=new InputData(g,_buttonRowIndex,_buttonColumnIndex);
+                g.AddComponent<Button>().onClick.AddListener(delegate{OnButtonClicked(_inputData);});
+
+
+                g.GetComponent<Button>().transition=Button.Transition.None;
+                matrixGrid[i,j]=new XOType(null,ID.NONE,false,i,j,g.GetComponent<Button>(),g.GetComponent<Image>(),g);
             }
         }
     }
 
 
-    void OnButtonClicked(GameObject buttonGameObject,int buttonRowIndex,int buttonColumnIndex)
+    void OnButtonClicked(InputData i)
     {
-        GameModeScript.gameModeScriptInstance.OnUserInput(buttonGameObject,buttonRowIndex,buttonColumnIndex);
+        GameManager.instance.gameMode.OnUserClicked(i);
     }
 
     //called after every time user pressed
-    void UpdateMatrixData(GameObject buttonGameObject,int row,int column,SPRITEID _spriteID)
+    public void UpdateMatrixData(InputData _inputData,PlayersData _playerData)
     {
-            matrixGrid[row,column].isOccupied=true;
-            matrixGrid[row,column].CURRENTPLAYERSPRITEID=_spriteID;
+            matrixGrid[_inputData.buttonRow,_inputData.buttonColumn].isOccupied=true;
+            matrixGrid[_inputData.buttonRow,_inputData.buttonColumn].CurrentPlayerID=_playerData.PlayerID;
+            matrixGrid[_inputData.buttonRow,_inputData.buttonColumn].buttonImage.sprite=_playerData.assignedSprite;
+            matrixGrid[_inputData.buttonRow,_inputData.buttonColumn].associatedButton.interactable=false;
             Debug.Log("you win ="+CheckForWinning());
     }
 
-    public void UpdateButtonSprite(GameObject buttonGameObject,int row,int column,Sprite spriteToChange)
+    bool CheckForWinning()
     {
-        matrixGrid[row,column].buttonImage.sprite=spriteToChange;
-         matrixGrid[row,column].associatedButton.interactable=false;
-
+        if(CheckIdentityValues()||CheckReverseIdentityValues()||CheckNormalIndices())
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
+
+
+
     bool CheckIdentityValues()
     {
         //checking for normal identity values in the matrixGrid 2d array
-        SPRITEID tempId=matrixGrid[0,0].CURRENTPLAYERSPRITEID;
+        ID tempId=matrixGrid[0,0].CurrentPlayerID;
         for(int i=0;i<gridSize;i++)
         {
-            if((tempId!=matrixGrid[i,i].CURRENTPLAYERSPRITEID)&&(matrixGrid[i,i].isOccupied))
+            if((tempId!=matrixGrid[i,i].CurrentPlayerID)&&(matrixGrid[i,i].isOccupied))
             {
                 return false;
             }
@@ -125,13 +126,13 @@ public class TicTacToeControllerScript : MonoBehaviour
     bool CheckReverseIdentityValues()
     {
         //checking for identity values but invers of it
-         SPRITEID tempId=matrixGrid[0,gridSize-1].CURRENTPLAYERSPRITEID;
+         ID tempId=matrixGrid[0,gridSize-1].CurrentPlayerID;
         int n=0,row=0,column=gridSize-1;
         while(n<gridSize-1)
         {
             row=row+1;
             column=column-1;
-            if((tempId!=matrixGrid[row,column].CURRENTPLAYERSPRITEID)&&(matrixGrid[row,column].isOccupied))
+            if((tempId!=matrixGrid[row,column].CurrentPlayerID)&&(matrixGrid[row,column].isOccupied))
             {
                 return false;
             }
@@ -154,11 +155,11 @@ public class TicTacToeControllerScript : MonoBehaviour
             {
                 return true;
             }
-            SPRITEID tempId=matrixGrid[i,0].CURRENTPLAYERSPRITEID;
+            ID tempId=matrixGrid[i,0].CurrentPlayerID;
 
             for(int j=0;j<gridSize;j++)
             {
-                if((tempId!=matrixGrid[i,j].CURRENTPLAYERSPRITEID)&&(matrixGrid[i,j].isOccupied))
+                if((tempId!=matrixGrid[i,j].CurrentPlayerID)&&(matrixGrid[i,j].isOccupied))
                 {
                     isTallied=false;
                     break;
@@ -183,9 +184,9 @@ public class TicTacToeControllerScript : MonoBehaviour
             }
             for(int j=0;j<gridSize;j++)
             {
-                SPRITEID tempId=matrixGrid[j,i].CURRENTPLAYERSPRITEID;
+                ID tempId=matrixGrid[j,i].CurrentPlayerID;
 
-                if((tempId!=matrixGrid[j,i].CURRENTPLAYERSPRITEID)&&(matrixGrid[j,i].isOccupied))
+                if((tempId!=matrixGrid[j,i].CurrentPlayerID)&&(matrixGrid[j,i].isOccupied))
                 {
                     isTallied=false;
                     break;
@@ -205,20 +206,6 @@ public class TicTacToeControllerScript : MonoBehaviour
 
     }
 
-    bool CheckForWinning()
-    {
-        if(CheckIdentityValues()||CheckReverseIdentityValues()||CheckNormalIndices())
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-    void InitializeVisualGridSize()
-    {
-        blocksSpawnGridRoot.GetComponent<GridLayoutGroup>().constraintCount=gridSize;
-    }
+
 }
 
